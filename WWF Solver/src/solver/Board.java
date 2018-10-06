@@ -359,7 +359,7 @@ public class Board {
 //		return existing;
 //	}
 	
-	private static String[][] allCombinations (String ltrs) {
+	public static String[][] allCombinations (String ltrs) {
 		ArrayList<ArrayList<String>> combos = new ArrayList<ArrayList<String>>();
 		for (int i = 0; i < ltrs.length(); i++) {
 			combos.add(new ArrayList<String>());
@@ -381,16 +381,16 @@ public class Board {
 	}
 	
 	private static ArrayList<ArrayList<String>> letterSizeCombinations(ArrayList<ArrayList<String>> existing, String availableLetters, String lettersSoFar) {
-		if (dictionaryContains(lettersSoFar)) {
-			for (int i = 0; i < availableLetters.length(); i++) {
-				String wordSoFar = lettersSoFar + availableLetters.charAt(i);
-				String remainingLetters = availableLetters.substring(0, i) + availableLetters.substring(i + 1);
-				
+		for (int i = 0; i < availableLetters.length(); i++) {
+			String wordSoFar = lettersSoFar + availableLetters.charAt(i);
+			String remainingLetters = availableLetters.substring(0, i) + availableLetters.substring(i + 1);
+			
+			if (dictionaryContains(wordSoFar)) {
 				if (!existing.get(wordSoFar.length()-1).contains(wordSoFar)) {
-					existing.get(wordSoFar.length()-1).add(wordSoFar);
-				}
-				
-				letterSizeCombinations(existing, remainingLetters, wordSoFar);
+				existing.get(wordSoFar.length()-1).add(wordSoFar);
+			}
+			
+			letterSizeCombinations(existing, remainingLetters, wordSoFar);
 			}
 		}
 		
