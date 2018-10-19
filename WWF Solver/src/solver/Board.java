@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -46,42 +47,6 @@ public class Board {
 		{1,1,2,1,1,1,1,1,1,1,1,1,2,1,1},
 		{1,1,1,1,1,1,3,1,3,1,1,1,1,1,1},
 	};
-	
-	private static final String[] VALID_WORDS;
-	
-	static {
-		ArrayList<String> dict = new ArrayList<String>();
-		
-//		String pathSep = File.pathSeparator;
-		
-		
-		try (
-//			FileReader reader = new FileReader(".." + pathSep + "ws_dict.txt");
-//			Scanner scan = new Scanner(reader);
-//			) {
-//			
-//			while(scan.hasNextLine()) {
-//				String line = scan.nextLine();
-//				dict.add(line);
-//			}
-			
-			BufferedReader reader = new BufferedReader(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream("ws_dict.txt")));
-			
-		) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				dict.add(line);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		VALID_WORDS = new String[dict.size()];
-		
-		for(int i = 0; i < dict.size(); i++) {
-			VALID_WORDS[i] = dict.get(i);
-		}
-	}
 	
 	private Letter[][] board;
 	private int width;
@@ -194,28 +159,17 @@ public class Board {
 		validateAvailableLetters(availableLetters);
 		final ProgressTracker pt = new ProgressTracker(0, board.width*board.width);
 		Thread[] rowProcessors = new Thread[board.width];
-
-//		ArrayList<String> allCombos = allCombinations(new ArrayList<String>(), availableLetters, "");
-//		final String[] combos = new String[allCombos.size()];
-		final String[][] combos = Board.allCombinations(availableLetters);
 		
-//		for (int i = 0; i < allCombos.size(); i++) {
-//			combos[i] = allCombos.get(i);
-//		}
+		final String[][] combos = StringTools.sizeCombinations(availableLetters, false);
 		
 		for (int y = 0; y < board.width; y++) {
 			final int yPos = y;
 			Thread rowProcessor = new Thread(new Runnable() {
 				@Override
 				public void run() {
-//					Word bestWord = null;
-
 					for (int x = 0; x < board.width; x++) {
 						if (board.getLetter(x, yPos) == null) {
-//							Word bestSpotWord = bestSpotWord(x, yPos, board, combos/*, wordRank*/);
 							wordRank.add(bestSpotWord(x, yPos, board, combos));
-//							bestWord = bestWord(bestSpotWord, bestWord);
-//							wordRank.add(bestWord);
 						}
 
 						pt.increment();
@@ -240,34 +194,6 @@ public class Board {
 		return wordRank.getWords();
     }
 	
-//	public static Word[] solve(Board board, String availableLetters) throws IllegalArgumentException {
-//		validateAvailableLetters(availableLetters);
-//		
-//		Word[] bestWords = new Word[5];
-//		
-//		for (int i = 0; i < board.width; i++) {
-//			for (int j = 0; j < board.width; j++) {
-//				if (board.getLetter(i, j) == null) {
-//					Word bestSpotWord = bestSpotWord(i, j, board, availableLetters, "");
-//					
-//					insertLoop: for (int index = 0; index < bestWords.length; index++) {
-//						if (bestSpotWord != null && (bestWords[index] == null || bestSpotWord.compareTo(bestWords[index]) > 0)) {
-//							for (int shift = bestWords.length - 1; shift > index; shift--) {
-//								bestWords[shift] = bestWords[shift - 1];
-//							}
-//							
-//							bestWords[index] = bestSpotWord;
-//							
-//							break insertLoop;
-//						}
-//					}
-//				}
-//			}
-//		}
-//		
-//		return bestWords;
-//	}
-	
 	private static void validateAvailableLetters (String letters) throws IllegalArgumentException {
 		for (int i = 0; i < letters.length(); i++) {
 			char c = letters.charAt(i);
@@ -277,7 +203,7 @@ public class Board {
 		}
 	}
 	
-	private static Word bestSpotWord(int x, int y, Board board, String[][] availableStrings/*, WordRank wr*/) {
+	private static Word bestSpotWord(int x, int y, Board board, String[][] availableStrings) {
 		if (board.getLetter(x, y) != null)
 			return null;
 		
@@ -310,113 +236,16 @@ public class Board {
 		for (int i = Math.min(xMinLength, yMinLength); i <= Math.max(xMaxLength, xMaxLength); i++) {
 			for (String letters: availableStrings[i-1]) {
 				if (i >= xMinLength && i <= xMaxLength) {
-					bestWord = bestWord(bestWord, new Word(letters, board, x, y, true));
-//					wr.add(bestWord);
+					bestWord = Word.bestWord(bestWord, new Word(letters, board, x, y, true));
 				}
 				
 				if (i >= yMinLength && i <= yMaxLength) {
-					bestWord = bestWord(bestWord, new Word(letters, board, x, y, false));
-//					wr.add(bestWord);
+					bestWord = Word.bestWord(bestWord, new Word(letters, board, x, y, false));
 				}
 			}
 		}
 		
 		return bestWord;
-	}
-	
-//	private static Word bestSpotWord(int x, int y, Board board, String availableLetters, String lettersSoFar) {
-//		Word bestWord = null;
-//		
-//		for (int i = 0; i < availableLetters.length(); i++) {
-//			String wordSoFar = lettersSoFar + availableLetters.charAt(i);
-//			String remainingLetters = availableLetters.substring(0, i) + availableLetters.substring(i + 1);
-//
-//			Word horizontalWord = new Word(wordSoFar, board, x, y, true);
-//			Word verticalWord = new Word(wordSoFar, board, x, y, false);
-//			
-//			Word bestCurrentWord = bestWord(horizontalWord, verticalWord);
-//			
-//			Word longVsCurrent = bestWord(bestCurrentWord, bestSpotWord(x, y, board, remainingLetters, wordSoFar));
-//			
-//			bestWord = bestWord(bestWord, longVsCurrent);
-//		}
-//		
-//		return bestWord;
-//	}
-	
-//	private static ArrayList<String> allCombinations(ArrayList<String> existing, String availableLetters, String lettersSoFar) {
-//		for (int i = 0; i < availableLetters.length(); i++) {
-//			String wordSoFar = lettersSoFar + availableLetters.charAt(i);
-//			String remainingLetters = availableLetters.substring(0, i) + availableLetters.substring(i + 1);
-//			
-//			if (!existing.contains(wordSoFar)) {
-//				existing.add(wordSoFar);
-//			}
-//			
-//			allCombinations(existing, remainingLetters, wordSoFar);
-//		}
-//		
-//		return existing;
-//	}
-	
-	public static String[][] allCombinations (String ltrs) {
-		ArrayList<ArrayList<String>> combos = new ArrayList<ArrayList<String>>();
-		for (int i = 0; i < ltrs.length(); i++) {
-			combos.add(new ArrayList<String>());
-		}
-		
-		letterSizeCombinations(combos, ltrs, "");
-		
-		String[][] allCombos = new String[combos.size()][];
-		
-		for (int i = 0; i < combos.size(); i++) {
-			String[] iSizeCombos = new String[combos.get(i).size()];
-			for (int j = 0; j < combos.get(i).size(); j++) {
-				iSizeCombos[j] = combos.get(i).get(j);
-			}
-			allCombos[i] = iSizeCombos;
-		}
-		
-		return allCombos;
-	}
-	
-	private static ArrayList<ArrayList<String>> letterSizeCombinations(ArrayList<ArrayList<String>> existing, String availableLetters, String lettersSoFar) {
-		for (int i = 0; i < availableLetters.length(); i++) {
-			String wordSoFar = lettersSoFar + availableLetters.charAt(i);
-			String remainingLetters = availableLetters.substring(0, i) + availableLetters.substring(i + 1);
-			
-			if (dictionaryContains(wordSoFar)) {
-				if (!existing.get(wordSoFar.length()-1).contains(wordSoFar)) {
-				existing.get(wordSoFar.length()-1).add(wordSoFar);
-			}
-			
-			letterSizeCombinations(existing, remainingLetters, wordSoFar);
-			}
-		}
-		
-		return existing;
-	}
-	
-	private static boolean dictionaryContains(String occurrence) {
-		for (int i = 0; i < VALID_WORDS.length; i++) {
-			if (VALID_WORDS[i].contains(occurrence))
-				return true;
-		}
-		return false;
-	}
-	
-	public static Word bestWord(Word one, Word two) {
-		if (one != null && two != null) {
-			if (one.compareTo(two) > 0)
-				return one;
-			return two;
-		} else if (one != null) {
-			return one;
-		} else if (two != null) {
-			return two;
-		}
-		
-		return null;
 	}
 	
 	public void setGrid(Letter[][] letters) {
@@ -442,7 +271,7 @@ public class Board {
 	 * @param word Word being updated
 	 */
 	public void updateWord(Word word) {
-		if (!this.validString(word.word()) || !word.touchesBoard()) {
+		if (!StringTools.validString(word.word()) || !word.touchesBoard()) {
 			word.setScore(-1);
 			word.setValid(false);
 			return;
@@ -453,7 +282,7 @@ public class Board {
 		int score = 0;
 		
 		for (Word w: crossWords.values()) {
-			if (!this.validString(w.word())) {
+			if (!StringTools.validString(w.word())) {
 				word.setScore(-1);
 				word.setValid(false);
 				return;
@@ -519,28 +348,6 @@ public class Board {
 			return 1;
 		}
 		return wordMultipliers[y][x];
-	}
-	
-	public boolean validString(String str) {
-		int minIndex = 0;
-		int maxIndex = VALID_WORDS.length - 1;
-		
-		while (true) {
-			if (maxIndex - minIndex < 2) {
-				return str.equals(VALID_WORDS[minIndex]) || str.equals(VALID_WORDS[maxIndex]);
-			}
-			
-			int guessIndex = (minIndex + maxIndex)/2;
-			String guess = VALID_WORDS[guessIndex];
-			
-			if (guess.equals(str)) {
-				return true;
-			} else if (str.compareTo(guess) < 0) {
-				maxIndex = guessIndex;
-			} else {
-				minIndex = guessIndex;
-			}
-		}
 	}
 	
 	public int width() {

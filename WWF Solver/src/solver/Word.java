@@ -113,7 +113,28 @@ public class Word implements Comparable<Word> {
 		this.allLetters = letters;
 		this.word = word;
 	}
-
+	
+	/**
+	 * Returns the higher scoring, valid word, or null if neither are valid
+	 * @param one First word to be compared
+	 * @param two Second word to be compared
+	 * @return
+	 */
+	public static Word bestWord(Word one, Word two) {
+		if (one != null && two != null) {
+			if (one.compareTo(two) > 0)
+				return one;
+			return two;
+		} else if (one != null) {
+			return one;
+		} else if (two != null) {
+			return two;
+		}
+		
+		return null;
+	}
+	
+	
 	/**
 	 * Should be used basically as a wrapper for a list of letters. All
 	 * functionality not guaranteed.
