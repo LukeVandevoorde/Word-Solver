@@ -4,10 +4,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -85,33 +88,99 @@ public class Main {
 //		String[][] comboCombos = StringTools.sizeCombinations("ahiopst", true);
 //		System.out.println("Total time: " + (System.currentTimeMillis() - startTime));
 		
-
+		ArrayList<String> words = downloadWordList();
+		Collections.sort(words);
+		
+		createResourceFile("webster_download_dict", words);
 		
 		
+	}
+	
+	public static void createResourceFile(String filename, ArrayList<String> data) {
+		try {
+			File res = new File(System.getProperty("user.dir") + "\\resources\\" + filename + ".txt");
+			BufferedWriter bw = new BufferedWriter(new FileWriter(res));
+			
+			for (String line: data) {
+				bw.write(line + "\n");
+			}
+			
+			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void testBoardSolve() {
 		Letter[][] letters = new Letter[15][15];
 		Board b = new Board (15, letters);
 		
 		ProgressMonitor pm = (progress) -> {
-			
+//			System.out.print(".");
 		};
 		
 		System.out.println("Solving");
 		
 		long startMillis = System.currentTimeMillis();
 		
-		Word[] bestWords = Board.solveThreaded(b, "ahiopst", pm, new WordRank(5));
+		Word[] bestWords = Board.solveThreaded(b, "abcdefg", pm, new WordRank(5));
+		System.out.println();
 		
 		System.out.println("Solve time: " + (System.currentTimeMillis() - startMillis));
+		System.out.println();
+		System.out.println(bestWords[0]);
+	}
+	
+	public static ArrayList<String> downloadWordList() {
+		ArrayList<String> wordList = new ArrayList<String>();
+		for (char i = 'a'; i <= 'z'; i++) {
+			String pageURLString = "http://scrabble.merriam.com/words/start-with/" + i;
+			
+			Scanner scan = null;
+			
+			try { 
+				URL pageURL = new URL(pageURLString);
+				InputStream is = pageURL.openStream();
+				scan = new Scanner(is);
+				
+				String fileData = "";
+				ArrayList<String> fileSource = new ArrayList<String>();
+				while(scan.hasNext()) {
+					String line = scan.nextLine();
+					fileSource.add(line);
+//					System.out.println(line);
+					fileData += line + System.getProperty("file.seperator");
+				}
+				
+				for (int j = 0; j < fileSource.size(); j++) {
+//					if (fileSource.get(i).contains("<div class=\"sbl_word_groups\">")) {
+//						sourceLineStart = j;
+//					}
+					
+					String line = fileSource.get(j);
+					int index;
+					String comparator = "a href=\"/finder/";
+					if ((index = line.indexOf(comparator)) > -1) {
+						System.out.println(line);
+						wordList.add(line.substring(index + comparator.length(), line.indexOf("\"", index+comparator.length())));
+					}
+				}
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				if(scan != null)
+					scan.close();
+			}
+		}
 		
-//		ArrayList<String> combos = new ArrayList<String>();
-//		
-//		fillCombos(combos, 7, 0, "");
-//		
-//		System.out.println(combos.size());
-		
-		/*
+		return wordList;
+	}
+	
+	public static void writeCombosToResourceFile(String filename, String ltrs, boolean dictCheck) {
+		String[][] comboCombos = StringTools.sizeCombinations(ltrs, dictCheck);
 		try {
-			File combo = new File(System.getProperty("user.dir") + "\\resources\\ahiopst.txt");
+			File combo = new File(System.getProperty("user.dir") + "\\resources\\" + filename + ".txt");
 			BufferedWriter bw = new BufferedWriter(new FileWriter(combo));
 			int len = 0;
 			for (int i = 0; i < comboCombos.length; i++) {
@@ -128,9 +197,7 @@ public class Main {
 			bw.close();
 		} catch (IOException e) {
 			System.out.println(e);
-		}*/
-		
-		
+		}
 	}
 	
 	public static void fillCombos(ArrayList<String> existing, int numRemainingLetters, int letterIndex, String lettersSoFar) {
@@ -147,5 +214,5 @@ public class Main {
 				fillCombos(existing, numRemainingLetters - i, letterIndex+1, lettersSoFar+str);
 			}
 		}
-	}	
+	}
 }

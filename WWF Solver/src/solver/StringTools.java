@@ -19,7 +19,9 @@ public class StringTools {
 		) {
 			String line;
 			while ((line = reader.readLine()) != null) {
-				dict.add(line);
+				if (line.length() > 1) {
+					dict.add(line);
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -43,25 +45,6 @@ public class StringTools {
 	
 	public static boolean validString(String str) {
 		return Arrays.binarySearch(VALID_WORDS, str) > -1;
-//		int minIndex = 0;
-//		int maxIndex = VALID_WORDS.length - 1;
-//		
-//		while (true) {
-//			if (maxIndex - minIndex < 2) {
-//				return str.equals(VALID_WORDS[minIndex]) || str.equals(VALID_WORDS[maxIndex]);
-//			}
-//			
-//			int guessIndex = (minIndex + maxIndex)/2;
-//			String guess = VALID_WORDS[guessIndex];
-//			
-//			if (guess.equals(str)) {
-//				return true;
-//			} else if (str.compareTo(guess) < 0) {
-//				maxIndex = guessIndex;
-//			} else {
-//				minIndex = guessIndex;
-//			}
-//		}
 	}
 	
 	public static ArrayList<String> allCombinations(String ltrs, boolean dictionaryCheck) {
@@ -120,12 +103,10 @@ public class StringTools {
 	private static void letterSizeCombinations(ArrayList<ArrayList<String>> existing, String availableLetters,
 			String lettersSoFar, boolean dictionaryCheck) {
 		
-//		System.out.println("running dictionary checking size combos!");
 		for (int i = 0; i < availableLetters.length(); i++) {
 			String wordSoFar = lettersSoFar + availableLetters.charAt(i);
 			
 			if (dictionaryWordsContain(wordSoFar)) {
-//				System.out.println("Dictionary contains: " + wordSoFar);
 				if (!existing.get(wordSoFar.length() - 1).contains(wordSoFar)) {
 					existing.get(wordSoFar.length() - 1).add(wordSoFar);
 				}

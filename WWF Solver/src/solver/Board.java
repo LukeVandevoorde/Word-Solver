@@ -203,12 +203,15 @@ public class Board {
 		}
 	}
 	
+	
+	
 	private static Word bestSpotWord(int x, int y, Board board, String[][] availableStrings) {
 		if (board.getLetter(x, y) != null)
 			return null;
 		
 		Word bestWord = null;
 		
+		// Determining Min and Max possible lengths for words in this spot
 		int xMinLength = 1;
 		int xMaxLength = Math.min(board.width - x, availableStrings.length);
 		
@@ -234,6 +237,7 @@ public class Board {
 		yMaxLength = new Word(test, board, x, y, true).newLetters().size();
 		
 		for (int i = Math.min(xMinLength, yMinLength); i <= Math.max(xMaxLength, xMaxLength); i++) {
+			
 			for (String letters: availableStrings[i-1]) {
 				if (i >= xMinLength && i <= xMaxLength) {
 					bestWord = Word.bestWord(bestWord, new Word(letters, board, x, y, true));
