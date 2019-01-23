@@ -63,35 +63,40 @@ public class Main {
 		
 		
 		
-//		ArrayList<String> combos = new ArrayList<String>();
-//		
-//		fillCombos(combos, 7, 0, "");
-//		
-//		System.out.println(combos.size());
-//		
-//		
-//		try {
-//			BufferedWriter bw = new BufferedWriter(new FileWriter(System.getProperty("user.dir") + "\\resources\\available_letter_combos.txt"));
-//			for (String str: combos) {
-//				bw.write(str);
-//				bw.newLine();
-//			}
-//			bw.close();
-//		} catch (IOException e) {
-//			System.out.println(e);
-//		}
-		
-		
 //		System.out.println("board contains hpsoi? : " + Board.dictionaryWordsContain("hpsoi"));
 //		System.out.println("ahiopst");
-//		long startTime = System.currentTimeMillis();
+		
+		
+		Board testBoard = new Board(15, 15, "--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------feabtbsb--------------------ncabtbibobnc------------------------celcobgd----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+		
+		System.out.println(testBoard.readableString());
+		
+		
+//		Word w = new Word("do", 8, 5, testBoard, false);
+		
+		System.out.println("is food valid? " + StringTools.validString("aaaa"));
+		
+		
+		Word w = Board.solveThreaded(testBoard, "abcdefg", (progress) -> {}, new WordRank(5))[0];
+		
+		long startTime = System.currentTimeMillis();
+		w = Board.solveThreaded(testBoard, "abcdefg", (progress) -> {}, new WordRank(5))[0];
+		long endTime = System.currentTimeMillis();
+//
+		testBoard.add(w);
+		System.out.println(testBoard.readableString());
+		System.out.println(w);
+		
+//		Word[] words = Board.solveThreaded(new Board(15), "ca*onb", (progress) -> {}, new WordRank(5));
+				
+//		System.out.println(words[0]);
 //		String[][] comboCombos = StringTools.sizeCombinations("ahiopst", true);
-//		System.out.println("Total time: " + (System.currentTimeMillis() - startTime));
+		System.out.println("Total time: " + (endTime - startTime));
 		
-		ArrayList<String> words = downloadWordList();
-		Collections.sort(words);
-		
-		createResourceFile("webster_download_dict", words);
+//		ArrayList<String> words = downloadWordList();
+//		Collections.sort(words);
+//		
+//		createResourceFile("webster_download_dict", words);
 		
 		
 	}
@@ -113,7 +118,7 @@ public class Main {
 	
 	public void testBoardSolve() {
 		Letter[][] letters = new Letter[15][15];
-		Board b = new Board (15, letters);
+		Board b = new Board (15, 15, letters);
 		
 		ProgressMonitor pm = (progress) -> {
 //			System.out.print(".");

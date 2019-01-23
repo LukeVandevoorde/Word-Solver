@@ -32,6 +32,10 @@ public class Letter {
 		LETTER_VALUES.put('x', 8);
 		LETTER_VALUES.put('y', 3);
 		LETTER_VALUES.put('z', 10);
+		
+		for (char i = 'A'; i <= 'Z'; i++) {
+			LETTER_VALUES.put(i, 0);
+		}
 	}
 	
 	private int x, y, value;
@@ -40,7 +44,7 @@ public class Letter {
 	public Letter(int x, int y, char letter) {
 		this.x = x;
 		this.y = y;
-		this.letter = letter;
+		this.letter = Character.toLowerCase(letter);
 		this.value = LETTER_VALUES.get(letter);
 	}
 	

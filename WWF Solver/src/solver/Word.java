@@ -5,113 +5,200 @@ import java.util.HashMap;
 public class Word implements Comparable<Word> {
 
 	private ArrayList<Letter> allLetters;
-	private ArrayList<Letter> newLetters;
 
 	private Board board;
 	private String word;
 	private boolean horizontal;
+	private boolean touchesBoard;
 	private int x, y;
 	private int score;
+	private int newLetterSize;
 	private boolean valid;
-
-	public Word(String newLetterString, Board board, int x, int y, boolean horizontal) {
+	
+	public Word (ArrayList<Letter> letters, boolean horizontal) {
+		this.allLetters = letters;
+		this.horizontal = horizontal;
+		this.valid = true;
+		this.touchesBoard = true;
+		this.x = letters.get(0).getX();
+		this.y = letters.get(0).getY();
+		this.score = 0;
+		this.word = "";
+		
+		for (Letter l: letters) {
+			word += l.getLetter();
+			score += l.value();
+		}
+	}
+	
+	public Word(String newLetters, int x, int y, Board board, boolean horizontal) {
+		this.allLetters = new ArrayList<Letter>();
 		this.x = x;
 		this.y = y;
-		this.horizontal = horizontal;
-
 		this.board = board;
-		this.allLetters = new ArrayList<Letter>();
-		this.newLetters = new ArrayList<Letter>();
-
-		this.word = "";
-
+		this.horizontal = horizontal;
+		this.valid = true;
+		this.touchesBoard = false;
+		this.score = 0;
+		this.newLetterSize = newLetters.length();
+		int wordMultiplier = 1;
+		
+		StringBuilder wordBuilder = new StringBuilder();
+		
 		if (horizontal) {
-			// letters touching and in the same orientation are included as word start
-			while (board.getLetter(this.x - 1, this.y) != null) {
-				this.x -= 1;
+			int xPos = x;
+			if (board.getLetter(xPos-1, y) != null) {
+				Word prefix = board.getHorizontalCrossword(board.getLetter(xPos-1, y));
+				this.allLetters.addAll(prefix.allLetters);
+				wordBuilder.append(prefix.word);
+				this.score += prefix.score;
+				this.touchesBoard = true;
+				
+				xPos = prefix.x + prefix.word.length();
 			}
-
-			int xpos = this.x;
-			int ypos = this.y;
-
-			for (int i = 0; i < newLetterString.length(); i++) {
-
-				// Add existing letters if there is not enough room for the entire word
-				Letter boardLetter = board.getLetter(xpos, ypos);
-
-				while (boardLetter != null) {
-					this.allLetters.add(boardLetter);
-					this.word += boardLetter.getLetter();
-					xpos += 1;
-					boardLetter = board.getLetter(xpos, ypos);
-				}
-
-				if (xpos >= board.width()) {
+			
+			for (int i = 0; i < newLetters.length(); i++) {
+				if (xPos > board.width() - 1) {
+					this.valid = false;
+					this.newLetterSize = i + 1;
 					break;
 				}
-
-				Letter newLetter = new Letter(xpos, ypos, newLetterString.charAt(i));
-				this.allLetters.add(newLetter);
-				this.newLetters.add(newLetter);
-				this.word += newLetter.getLetter();
-				xpos += 1;
+				if (board.getLetter(xPos, y) != null) {
+					Word w = board.getHorizontalCrossword(board.getLetter(xPos, y));
+					this.allLetters.addAll(w.allLetters);
+					this.score += w.score;
+					xPos += w.word.length();
+					wordBuilder.append(w.word);
+				} else {
+					Letter l = new Letter(xPos, y, newLetters.charAt(i));
+					this.allLetters.add(l);
+					int lScore = l.value() * board.letterMultiplier(xPos, y);
+					wordMultiplier *= board.wordMultiplier(xPos, y);
+					this.score += lScore;
+					
+					Letter up = board.getLetter(xPos, y-1);
+					Letter down = board.getLetter(xPos, y+1);
+					String upCross = "";
+					String downCross = "";
+					
+					if (up != null || down != null) {
+						this.score += lScore;
+						this.touchesBoard = true;
+					}
+					
+					if (up != null) {
+						Word upWord = board.getVerticalCrossword(up);
+						upCross = upWord.word;
+						this.score += upWord.score;
+					}
+					if (down != null) {
+						Word downWord = board.getVerticalCrossword(down);
+						downCross = downWord.word;
+						this.score += downWord.score;
+					}
+					
+					if ((up != null || down != null) && !StringTools.validString(upCross + l.getLetter() + downCross)) {
+						this.valid = false;
+					}
+					
+					wordBuilder.append(l.getLetter());
+					xPos += 1;
+				}
 			}
-			// Letters after the end of the word
-			Letter boardLetter = board.getLetter(xpos, ypos);
-			while (boardLetter != null) {
-				this.allLetters.add(boardLetter);
-				this.word += boardLetter.getLetter();
-				xpos += 1;
-				boardLetter = board.getLetter(xpos, ypos);
+			
+			if (board.getLetter(xPos, y) != null) {
+				Word suffix = board.getHorizontalCrossword(board.getLetter(xPos, y));
+				this.allLetters.addAll(suffix.allLetters);
+				wordBuilder.append(suffix.word);
+				this.touchesBoard = true;
+				this.score += suffix.score;
 			}
 		} else {
-			// letters touching and in the same orientation are included as word start
-			while (board.getLetter(this.x, this.y - 1) != null) {
-				this.y -= 1;
+			int yPos = y;
+			if (board.getLetter(x, yPos - 1) != null) {
+				Word prefix = board.getVerticalCrossword(board.getLetter(x, yPos - 1));
+				this.allLetters.addAll(prefix.allLetters);
+				wordBuilder.append(prefix.word);
+				this.touchesBoard = true;
+				this.score += prefix.score;
+				
+				yPos = prefix.y + prefix.word.length();
 			}
-
-			int xpos = this.x;
-			int ypos = this.y;
-
-			for (int i = 0; i < newLetterString.length(); i++) {
-
-				// Add existing letters if there is not enough room for the entire word
-				Letter boardLetter = board.getLetter(xpos, ypos);
-
-				while (boardLetter != null) {
-					this.allLetters.add(boardLetter);
-					this.word += boardLetter.getLetter();
-					ypos += 1;
-					boardLetter = board.getLetter(xpos, ypos);
-				}
-
-				if (ypos >= board.width()) {
+			
+			for (int i = 0; i < newLetters.length(); i++) {
+				if (yPos > board.height() - 1) {
+					this.valid = false;
+					this.newLetterSize = i + 1;
 					break;
 				}
-
-				Letter newLetter = new Letter(xpos, ypos, newLetterString.charAt(i));
-				this.allLetters.add(newLetter);
-				this.newLetters.add(newLetter);
-				this.word += newLetter.getLetter();
-				ypos += 1;
+				if (board.getLetter(x, yPos) != null) {
+					Word w = board.getVerticalCrossword(board.getLetter(x, yPos));
+					this.allLetters.addAll(w.allLetters);
+					this.score += w.score;
+					yPos += w.word.length();
+					wordBuilder.append(w.word);
+				} else {
+					Letter l = new Letter(x, yPos, newLetters.charAt(i));
+					this.allLetters.add(l);
+					int lScore = l.value() * board.letterMultiplier(x, yPos);
+					wordMultiplier *= board.wordMultiplier(x, yPos);
+					this.score += lScore;
+					
+					Letter left = board.getLetter(x-1, yPos);
+					Letter right = board.getLetter(x+1, yPos);
+					
+					String leftCross = "";
+					String rightCross = "";
+					
+					if (left != null || right != null) {
+						this.score += lScore;
+						this.touchesBoard = true;
+					}
+					
+					if (left != null) {
+						Word leftWord = board.getHorizontalCrossword(left);
+						leftCross = leftWord.word;
+						this.score += leftWord.score;
+					}
+					if (right != null) {
+						Word rightWord = board.getHorizontalCrossword(right);
+						rightCross = rightWord.word;
+						this.score += rightWord.score;
+					}
+					
+					if ((left != null || right != null) && !StringTools.validString(leftCross + l.getLetter() + rightCross)) {
+						this.valid = false;
+					}
+					
+					wordBuilder.append(l.getLetter());
+					yPos += 1;
+				}
 			}
-			// Letters after the end of the word
-			Letter boardLetter = board.getLetter(xpos, ypos);
-			while (boardLetter != null) {
-				this.allLetters.add(boardLetter);
-				this.word += boardLetter.getLetter();
-				ypos += 1;
-				boardLetter = board.getLetter(xpos, ypos);
+			
+			if (board.getLetter(x, yPos) != null) {
+				Word suffix = board.getVerticalCrossword(board.getLetter(x, yPos));
+				this.allLetters.addAll(suffix.allLetters);
+				wordBuilder.append(suffix.word);
+				this.touchesBoard = true;
+				this.score += suffix.score;
 			}
 		}
 		
-		board.updateWord(this);
-	}
-	
-	private Word(ArrayList<Letter> letters, String word, Board board) {
-		this.board = board;
-		this.allLetters = letters;
-		this.word = word;
+		this.score *= wordMultiplier;
+		if (newLetters.length() >= 7) {
+			this.score += 35;
+		}
+		
+		this.word = wordBuilder.toString();
+		
+		if (!this.touchesBoard && board.isEmpty()) {
+			this.touchesBoard = (this.horizontal && this.y == 7 && this.x <= 7 && this.x + this.word.length() >= 7) || 
+					(!this.horizontal && this.x == 7 && this.y <= 7 && this.y + this.word.length() >= 7);
+		}
+		
+		if (!StringTools.validString(this.word) || !this.touchesBoard) {
+			this.valid = false;
+		}
 	}
 	
 	/**
@@ -134,16 +221,6 @@ public class Word implements Comparable<Word> {
 		return null;
 	}
 	
-	
-	/**
-	 * Should be used basically as a wrapper for a list of letters. All
-	 * functionality not guaranteed.
-	 * 
-	 * @return Word with potentially limited functionality
-	 */
-	public static Word letterStorage(ArrayList<Letter> letters, String word, Board board) {
-		return new Word(letters, word, board);
-	}
 
 	@Override
 	public String toString() {
@@ -162,45 +239,12 @@ public class Word implements Comparable<Word> {
 		return this.horizontal;
 	}
 	
-	public String newWord() {
-		String out = "";
-		for(Letter l: newLetters) {
-			out += l.getLetter();
-		}
-		return out;
-	}
-	
 	public String word() {
 		return this.word;
 	}
-
+	
 	public boolean touchesBoard() {
-		if (allLetters.size() - newLetters.size() > 0)
-			return true;
-
-		if (horizontal) {
-			if (board.empty())
-				return (this.y == 7 && this.x <= 7 && this.x >= (7-this.allLetters.size()));
-			
-			for (Letter horizontalLetter : newLetters) {
-				if (board.getLetter(horizontalLetter.getX(), horizontalLetter.getY() + 1) != null
-						|| board.getLetter(horizontalLetter.getX(), horizontalLetter.getY() - 1) != null) {
-					return true;
-				}
-			}
-		} else {
-			if (board.empty())
-				return (this.x == 7 && this.y <= 7 && this.y >= (7-this.allLetters.size()));
-			
-			for (Letter horizontalLetter : newLetters) {
-				if (board.getLetter(horizontalLetter.getX() + 1, horizontalLetter.getY()) != null
-						|| board.getLetter(horizontalLetter.getX() - 1, horizontalLetter.getY()) != null) {
-					return true;
-				}
-			}
-		}
-
-		return false;
+		return this.touchesBoard;
 	}
 
 	public void setScore(int score) {
@@ -225,56 +269,11 @@ public class Word implements Comparable<Word> {
 			return -1;
 		}
 	}
-
-	public HashMap<Letter, Word> crossWords() {
-		HashMap<Letter, Word> crossWords = new HashMap<Letter, Word>();
-		if (horizontal) {
-			for (Letter l : newLetters) {
-				ArrayList<Letter> crossWord = new ArrayList<Letter>();
-				String crossString = "";
-				int xpos = l.getX();
-				int ypos = l.getY();
-				Letter boardLetter;
-				while ((boardLetter = board.getLetter(xpos, ypos - 1)) != null) {
-					ypos -= 1;
-				}
-				while ((boardLetter = board.getLetter(xpos, ypos)) != null || ypos == l.getY()) {
-					if (ypos == l.getY())
-						boardLetter = l;
-					
-					crossWord.add(boardLetter);
-					crossString += boardLetter.getLetter();
-					ypos += 1;
-				}
-				if (crossWord.size() > 1) {
-					crossWords.put(l, Word.letterStorage(crossWord, crossString, board));
-				}
-			}
-		} else {
-			for (Letter l : newLetters) {
-				ArrayList<Letter> crossWord = new ArrayList<Letter>();
-				String crossString = "";
-				int xpos = l.getX();
-				int ypos = l.getY();
-				Letter boardLetter;
-				while ((boardLetter = board.getLetter(xpos - 1, ypos)) != null) {
-					xpos -= 1;
-				}
-				while ((boardLetter = board.getLetter(xpos, ypos)) != null || xpos == l.getX()) {
-					if (xpos == l.getX())
-						boardLetter = l;
-					crossWord.add(boardLetter);
-					crossString += boardLetter.getLetter();
-					xpos += 1;
-				}
-				if (crossWord.size() > 1) {
-					crossWords.put(l, Word.letterStorage(crossWord, crossString, board));
-				}
-			}
-		}
-		return crossWords;
+	
+	public int newLetterSize() {
+		return this.newLetterSize;
 	}
-
+	
 	public boolean valid() {
 		return valid;
 	}
@@ -285,9 +284,5 @@ public class Word implements Comparable<Word> {
 
 	public ArrayList<Letter> allLetters() {
 		return this.allLetters;
-	}
-
-	public ArrayList<Letter> newLetters() {
-		return this.newLetters;
 	}
 }
