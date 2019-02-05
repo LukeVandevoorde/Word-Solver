@@ -4,6 +4,7 @@ import java.util.HashMap;
 public class Letter {
 	
 	private static final HashMap<Character, Integer> LETTER_VALUES = new HashMap<Character, Integer>();
+	private static final int[] LETTER_VALUE_ARRAY = new int[(int)('z') + 1];
 	
 	static {
 		LETTER_VALUES.put('a', 1);
@@ -36,6 +37,14 @@ public class Letter {
 		for (char i = 'A'; i <= 'Z'; i++) {
 			LETTER_VALUES.put(i, 0);
 		}
+		
+		for (char c = 'A'; c <= 'Z'; c++) {
+			LETTER_VALUE_ARRAY[(int)c] = 0;
+		}
+		
+		for (char a = 'a'; a <= 'z'; a++) {
+			LETTER_VALUE_ARRAY[(int)(a)] = LETTER_VALUES.get(a);
+		}
 	}
 	
 	private int x, y, value;
@@ -45,7 +54,7 @@ public class Letter {
 		this.x = x;
 		this.y = y;
 		this.letter = Character.toLowerCase(letter);
-		this.value = LETTER_VALUES.get(letter);
+		this.value = LETTER_VALUE_ARRAY[letter];//LETTER_VALUES.get(letter);
 	}
 	
 	public Letter(int x, int y, char letter, int value) {

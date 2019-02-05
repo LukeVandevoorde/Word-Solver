@@ -123,7 +123,6 @@ public class Board {
 	}
 	
 	private void initializeCrosswords () {
-		System.out.println("Initializing crosswords");
 		if (horizontalWords == null) {
 			horizontalWords = new HashMap<Letter, Word>();
 		}

@@ -74,7 +74,7 @@ public class Main {
 		
 //		Word w = new Word("do", 8, 5, testBoard, false);
 		
-		System.out.println("is food valid? " + StringTools.validString("aaaa"));
+		System.out.println("is aaaa valid? " + StringTools.validString("aaaa"));
 		
 		
 		Word w = Board.solveThreaded(testBoard, "abcdefg", (progress) -> {}, new WordRank(5))[0];
