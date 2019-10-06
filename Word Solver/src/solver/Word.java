@@ -42,6 +42,7 @@ public class Word implements Comparable<Word> {
 		this.score = 0;
 		this.newLetterSize = newLetters.length();
 		int wordMultiplier = 1;
+		int crossScore = 0;
 		
 		StringBuilder wordBuilder = new StringBuilder();
 		
@@ -81,20 +82,35 @@ public class Word implements Comparable<Word> {
 					String upCross = "";
 					String downCross = "";
 					
+//					if (up != null || down != null) {
+//						this.score += lScore;
+//						this.touchesBoard = true;
+//					}
+//					
+//					if (up != null) {
+//						Word upWord = board.getVerticalCrossword(up);
+//						upCross = upWord.word;
+//						this.score += upWord.score;
+//					}
+//					if (down != null) {
+//						Word downWord = board.getVerticalCrossword(down);
+//						downCross = downWord.word;
+//						this.score += downWord.score;
+//					}
 					if (up != null || down != null) {
-						this.score += lScore;
+						crossScore += lScore;
 						this.touchesBoard = true;
 					}
 					
 					if (up != null) {
 						Word upWord = board.getVerticalCrossword(up);
 						upCross = upWord.word;
-						this.score += upWord.score;
+						crossScore += upWord.score;
 					}
 					if (down != null) {
 						Word downWord = board.getVerticalCrossword(down);
 						downCross = downWord.word;
-						this.score += downWord.score;
+						crossScore += downWord.score;
 					}
 					
 					if ((up != null || down != null) && !StringTools.validString(upCross + l.getLetter() + downCross)) {
@@ -150,20 +166,39 @@ public class Word implements Comparable<Word> {
 					String leftCross = "";
 					String rightCross = "";
 					
+//					if (left != null || right != null) {
+//						this.score += lScore;
+//						this.touchesBoard = true;
+//					}
+//					
+//					if (left != null) {
+//						Word leftWord = board.getHorizontalCrossword(left);
+//						leftCross = leftWord.word;
+//						this.score += leftWord.score;
+//					}
+//					if (right != null) {
+//						Word rightWord = board.getHorizontalCrossword(right);
+//						rightCross = rightWord.word;
+//						this.score += rightWord.score;
+//					}
+//					
+//					if ((left != null || right != null) && !StringTools.validString(leftCross + l.getLetter() + rightCross)) {
+//						this.valid = false;
+//					}
 					if (left != null || right != null) {
-						this.score += lScore;
+						crossScore += lScore;
 						this.touchesBoard = true;
 					}
 					
 					if (left != null) {
 						Word leftWord = board.getHorizontalCrossword(left);
 						leftCross = leftWord.word;
-						this.score += leftWord.score;
+						crossScore += leftWord.score;
 					}
 					if (right != null) {
 						Word rightWord = board.getHorizontalCrossword(right);
 						rightCross = rightWord.word;
-						this.score += rightWord.score;
+						crossScore += rightWord.score;
 					}
 					
 					if ((left != null || right != null) && !StringTools.validString(leftCross + l.getLetter() + rightCross)) {
@@ -188,6 +223,7 @@ public class Word implements Comparable<Word> {
 		if (newLetters.length() >= 7) {
 			this.score += 35;
 		}
+		this.score += crossScore;
 		
 		this.word = wordBuilder.toString();
 		

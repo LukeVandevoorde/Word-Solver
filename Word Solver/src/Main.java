@@ -56,9 +56,9 @@ public class Main {
 	 }
 	
 	public static void main(String[] args) {
-	
+		System.out.println(StringTools.validString("foo"));
 		
-		
+		/*
 		System.out.println("Current directory:\n" + System.getProperty("user.dir"));
 		
 		
@@ -98,7 +98,7 @@ public class Main {
 //		
 //		createResourceFile("webster_download_dict", words);
 		
-		
+		*/
 	}
 	
 	public static void createResourceFile(String filename, ArrayList<String> data) {
